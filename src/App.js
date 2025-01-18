@@ -13,6 +13,7 @@ import Footer from "./components/Footer";
 import { UserProvider } from "./context/UserContext";
 
 // Pages
+import Homepage from "./pages/Homepage";
 import RegisterPage from "./pages/RegisterPage";
 import LoginPage from "./pages/LoginPage";
 import MoviesPage from "./pages/MoviesPage";
@@ -22,6 +23,7 @@ import Logout from "./pages/Logout";
 function App() {
   const [user, setUser] = useState({
     id: null,
+    isAdmin: null,
   });
 
   const unsetUser = () => {
@@ -31,7 +33,7 @@ function App() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) {
-      setUser({ id: null });
+      setUser({ id: null, isAdmin: false });
       return;
     }
 
@@ -42,16 +44,15 @@ function App() {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       })
-      .then((data) => {
-        if (typeof data !== "undefined") {
-          setUser({ id: data._id });
+      .then((response) => {
+        if (response.data && response.data.user) {
+          setUser({
+            id: response.data.user._id,
+            isAdmin: response.data.user.isAdmin,
+          });
         } else {
-          setUser({ id: null });
+          setUser({ id: null, isAdmin: null });
         }
-      })
-      .catch((error) => {
-        console.error("Error fetching user details:", error);
-        setUser({ id: null });
       });
   }, []);
 
@@ -61,6 +62,7 @@ function App() {
         <Router>
           <Navbar />
           <Routes>
+            <Route path="/" element={<Homepage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/movies" element={<MoviesPage />} />

@@ -34,7 +34,7 @@ const LoginPage = () => {
       })
       .catch((error) => {
         console.error(error);
-        notyf.error("Something went wrong");
+        notyf.error("User does not exist");
       });
   };
 
@@ -46,10 +46,17 @@ const LoginPage = () => {
         },
       })
       .then((response) => {
-        setUser({ id: response.data._id });
-        notyf.success("Welcome User");
+        setUser({
+          id: response.data.user._id,
+          isAdmin: response.data.user.isAdmin,
+        });
         setIsLoggedIn(true);
         console.log("Welcome User");
+        if (response.data.user.isAdmin) {
+          notyf.success("Welcome Admin");
+        } else {
+          notyf.success("Welcome User");
+        }
       })
       .catch((error) => {
         console.error("Error retrieving user details:", error);
@@ -57,9 +64,9 @@ const LoginPage = () => {
       });
   };
 
-  // if (isLoggedIn || user.id !== null) {
-  //   return <Navigate to="/movies" />;
-  // }
+  if (isLoggedIn || user.id !== null) {
+    return <Navigate to="/movies" />;
+  }
 
   return (
     <div className="h-screen mt-40 mx-5">
@@ -97,7 +104,7 @@ const LoginPage = () => {
           type="submit"
           class="text-white bg-blue-500 hover:bg-blue-600 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center"
         >
-          Submit
+          Login
         </button>
       </form>
     </div>
