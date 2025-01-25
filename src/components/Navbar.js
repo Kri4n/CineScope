@@ -7,7 +7,7 @@ const Navbar = () => {
   const { user } = useContext(UserContext);
 
   return (
-    <nav className="bg-gray-800 border-b border-gray-700">
+    <nav className="bg-gray-800 border-b border-gray-700 navbar">
       <div className="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
         <Link to="/">
           <h1 className="text-gray-200 self-center text-2xl font-semibold whitespace-nowrap">
