@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import UserContext from "../context/UserContext";
-import MoviePoster from "../images/MoviePoster.jpg";
+import MoviePoster from "../images/cinema-logo.jpg";
 
 const SingleMoviePage = () => {
   const { user } = useContext(UserContext);

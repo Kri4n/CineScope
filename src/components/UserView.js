@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import Spinner from "./Spinner";
+import CinemaLogo from "../images/cinema-logo.jpg"
 
 const UserView = () => {
   const [movies, setMovies] = useState([]); // All movies
@@ -56,7 +57,7 @@ const UserView = () => {
               >
                 <img
                   className="rounded-t-lg h-2/5 w-full"
-                  src="https://image.tmdb.org/t/p/original/cGm2qnmXx9tFabmzEIkJZjCJdQd.jpg"
+                  src={CinemaLogo}
                 />
 
                 <div className="p-5">
