@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Spinner from "./Spinner"; // Assume Spinner is in the same directory
+import { Notyf } from "notyf";
 
 const AdminDashboard = () => {
   const [movies, setMovies] = useState([]);
@@ -8,6 +9,8 @@ const AdminDashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const moviesPerPage = 10;
+
+  const notyf = new Notyf();
 
   useEffect(() => {
     axios
@@ -32,6 +35,21 @@ const AdminDashboard = () => {
 
   const totalPages = Math.ceil(movies.length / moviesPerPage);
 
+  const addMovie = () => {
+    let token = localStorage.getItem("token");
+
+    axios
+      .post("https://movieapp-api-lms1.onrender.com/movies/addMovie", {
+        Authorization: `Bearer(${token})`,
+      })
+      .then((response) => {
+        notyf.success("Movie added");
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
   return (
     <div className="text-gray-100 p-3">
       <div className="flex flex-col justify-center items-center">
@@ -39,7 +57,7 @@ const AdminDashboard = () => {
 
         <button
           onClick={() => setIsModalOpen(true)}
-          className="block text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+          className="block text-white bg-blue-700 hover:bg-blue-800  font-medium rounded-lg text-sm px-5 py-2.5 text-center"
         >
           Add Movie
         </button>
@@ -155,8 +173,9 @@ const AdminDashboard = () => {
                 </div>
               </div>
               <button
+                onClick={addMovie}
                 type="submit"
-                className="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
+                className="w-full text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
               >
                 Add Movie
               </button>
