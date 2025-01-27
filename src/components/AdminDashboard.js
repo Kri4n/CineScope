@@ -10,9 +10,16 @@ const AdminDashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const moviesPerPage = 10;
 
+  // New movie input fields value
+  const [title, setTitle] = useState("");
+  const [director, setDirector] = useState("");
+  const [year, setYear] = useState(0);
+  const [description, setDescription] = useState("");
+  const [genre, setGenre] = useState("");
+
   const notyf = new Notyf();
 
-  useEffect(() => {
+  const fetchMovies = () => {
     axios
       .get("https://movieapp-api-lms1.onrender.com/movies/getMovies")
       .then((response) => {
@@ -23,6 +30,10 @@ const AdminDashboard = () => {
         console.error("Error fetching movies:", error);
         setIsLoading(false); // Set loading to false even on error
       });
+  };
+
+  useEffect(() => {
+    fetchMovies();
   }, []);
 
   const indexOfLastMovie = currentPage * moviesPerPage;
@@ -35,18 +46,81 @@ const AdminDashboard = () => {
 
   const totalPages = Math.ceil(movies.length / moviesPerPage);
 
-  const addMovie = () => {
+  const addMovie = (e) => {
+    e.preventDefault();
     let token = localStorage.getItem("token");
 
     axios
-      .post("https://movieapp-api-lms1.onrender.com/movies/addMovie", {
-        Authorization: `Bearer(${token})`,
-      })
+      .post(
+        "https://movieapp-api-lms1.onrender.com/movies/addMovie",
+        {
+          title: title,
+          director: director,
+          year: year,
+          description: description,
+          genre: genre,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
       .then((response) => {
         notyf.success("Movie added");
+        fetchMovies();
+        setIsModalOpen(false);
       })
       .catch((error) => {
-        console.error(error);
+        notyf.error("Error adding movie");
+      });
+  };
+
+  // Edit Movie
+
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  const [editTitle, setEditTitle] = useState("");
+  const [editDirector, setEditDirector] = useState("");
+  const [editYear, setEditYear] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editGenre, setEditGenre] = useState("");
+  const [editMovieId, setEditMovieId] = useState(null);
+
+  const openEditModal = (editMovieId) => {
+    setEditMovieId(editMovieId);
+    setIsEditModalOpen(true);
+  };
+
+  const updateMovie = (e) => {
+    e.preventDefault();
+    let token = localStorage.getItem("token");
+
+    axios
+      .patch(
+        `https://movieapp-api-lms1.onrender.com/movies/updateMovie/${editMovieId}`,
+        {
+          title: editTitle,
+          director: editDirector,
+          year: editYear,
+          description: editDescription,
+          genre: editGenre,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+      .then((response) => {
+        notyf.success("Movie updated successfully");
+        fetchMovies();
+        setIsEditModalOpen(false);
+      })
+      .catch((error) => {
+        notyf.error("Error updating movie");
       });
   };
 
@@ -94,7 +168,7 @@ const AdminDashboard = () => {
               </button>
             </div>
 
-            <form className="p-4">
+            <form className="p-4" onSubmit={addMovie}>
               <div className="grid gap-4 mb-4">
                 <div>
                   <label
@@ -104,6 +178,7 @@ const AdminDashboard = () => {
                     Title
                   </label>
                   <input
+                    onChange={(e) => setTitle(e.target.value)}
                     type="text"
                     id="title"
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
@@ -119,6 +194,7 @@ const AdminDashboard = () => {
                     Director
                   </label>
                   <input
+                    onChange={(e) => setDirector(e.target.value)}
                     type="text"
                     id="director"
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
@@ -134,6 +210,7 @@ const AdminDashboard = () => {
                     Year
                   </label>
                   <input
+                    onChange={(e) => setYear(e.target.value)}
                     type="text"
                     id="year"
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
@@ -149,6 +226,7 @@ const AdminDashboard = () => {
                     Description
                   </label>
                   <textarea
+                    onChange={(e) => setDescription(e.target.value)}
                     type="text"
                     id="description"
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
@@ -164,6 +242,7 @@ const AdminDashboard = () => {
                     Genre
                   </label>
                   <input
+                    onChange={(e) => setGenre(e.target.value)}
                     type="text"
                     id="genre"
                     className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white"
@@ -173,7 +252,6 @@ const AdminDashboard = () => {
                 </div>
               </div>
               <button
-                onClick={addMovie}
                 type="submit"
                 className="w-full text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center"
               >
@@ -222,7 +300,10 @@ const AdminDashboard = () => {
                   </td>
                   <td className="p-2 border border-gray-600">
                     <div className="flex flex-col gap-2">
-                      <button className="w-20 h-9 py-1 px-3 text-sm font-medium bg-blue-500 text-white rounded hover:bg-blue-600">
+                      <button
+                        onClick={() => openEditModal(movie._id)}
+                        className="w-20 h-9 py-1 px-3 text-sm font-medium bg-blue-500 text-white rounded hover:bg-blue-600"
+                      >
                         Edit
                       </button>
                       <button className="w-20 h-9 text-sm font-medium bg-red-500 text-white rounded hover:bg-red-600">
@@ -234,6 +315,119 @@ const AdminDashboard = () => {
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {isEditModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+          <div className="bg-gray-700 rounded-lg shadow-lg w-full max-w-md">
+            <div className="flex items-center justify-between p-4 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-white">Edit Movie</h3>
+              <button
+                onClick={() => setIsEditModalOpen(false)}
+                className="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 flex justify-center items-center"
+              >
+                <svg
+                  className="w-3 h-3"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 14 14"
+                >
+                  <path
+                    stroke="currentColor"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M1 1l6 6m0 0l6 6M7 7l6-6M7 7L1 13"
+                  />
+                </svg>
+              </button>
+            </div>
+            <form className="p-4" onSubmit={updateMovie}>
+              <div className="grid gap-4 mb-4">
+                <div>
+                  <label
+                    htmlFor="editTitle"
+                    className="block text-sm font-medium text-white"
+                  >
+                    Title
+                  </label>
+                  <input
+                    type="text"
+                    id="editTitle"
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-lg text-gray-900"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="editDirector"
+                    className="block text-sm font-medium text-white"
+                  >
+                    Director
+                  </label>
+                  <input
+                    type="text"
+                    id="editDirector"
+                    value={editDirector}
+                    onChange={(e) => setEditDirector(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-lg text-gray-900"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="editYear"
+                    className="block text-sm font-medium text-white"
+                  >
+                    Year
+                  </label>
+                  <input
+                    type="number"
+                    id="editYear"
+                    value={editYear}
+                    onChange={(e) => setEditYear(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-lg text-gray-900"
+                  />
+                </div>
+                <div>
+                  <label
+                    htmlFor="editDescription"
+                    className="block text-sm font-medium text-white"
+                  >
+                    Description
+                  </label>
+                  <textarea
+                    id="editDescription"
+                    value={editDescription}
+                    onChange={(e) => setEditDescription(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-lg text-gray-900"
+                  ></textarea>
+                </div>
+                <div>
+                  <label
+                    htmlFor="editGenre"
+                    className="block text-sm font-medium text-white"
+                  >
+                    Genre
+                  </label>
+                  <input
+                    type="text"
+                    id="editGenre"
+                    value={editGenre}
+                    onChange={(e) => setEditGenre(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded-lg text-gray-900"
+                  />
+                </div>
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700"
+              >
+                Save Changes
+              </button>
+            </form>
+          </div>
         </div>
       )}
 
