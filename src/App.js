@@ -41,7 +41,7 @@ function App() {
       .get("https://movieapp-api-lms1.onrender.com/users/details", {
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          Authorization: `Bearer ${localStorage.getItem(token)}`,
         },
       })
       .then((response) => {

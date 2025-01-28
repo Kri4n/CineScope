@@ -25,16 +25,34 @@ const SingleMoviePage = () => {
         setYear(response.data.year);
         setDescription(response.data.description);
         setGenre(response.data.genre);
+      })
+      .catch((error) => console.error(error));
+  }, [movieId, user]);
+
+  useEffect(() => {
+    let token = localStorage.getItem("token");
+
+    axios
+      .get(
+        `https://movieapp-api-lms1.onrender.com/movies/getComments/${movieId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+      .then((response) => {
         setComments(response.data.comments);
       })
       .catch((error) => console.error(error));
-  }, [user]);
+  }, [movieId, user]);
 
   return (
     <>
       <div className="grid grid-cols-3 mx-36 my-20">
         <div className="col-span-1">
-          <img src={MoviePoster} className="w-80" />
+          <img src={MoviePoster} alt="MovieLogo" className="w-80" />
           <h1 className="text-4xl text-gray-100 my-5">{title}</h1>
         </div>
 
@@ -52,8 +70,16 @@ const SingleMoviePage = () => {
 
           <p className="text-gray-100 text-2xl">Comments</p>
           <hr></hr>
-          {{ comments } > 0 ? (
-            <p>{comments}</p>
+
+          {comments && comments.length > 0 ? (
+            <ul className="text-gray-100">
+              {comments.map((comment) => (
+                <>
+                  <li key={comment._id}>User ID#{comment.userId}</li>
+                  <li key={comment._id}>{comment.comment}</li>
+                </>
+              ))}
+            </ul>
           ) : (
             <p className="text-gray-100">No Comments Available</p>
           )}
