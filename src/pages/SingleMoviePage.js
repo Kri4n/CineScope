@@ -3,10 +3,9 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import UserContext from "../context/UserContext";
 import MoviePoster from "../images/cinema-logo.jpg";
+import { Notyf } from "notyf";
 
 const SingleMoviePage = () => {
-  const { user } = useContext(UserContext);
-
   const { movieId } = useParams();
 
   const [title, setTitle] = useState("");
@@ -15,6 +14,12 @@ const SingleMoviePage = () => {
   const [description, setDescription] = useState("");
   const [genre, setGenre] = useState("");
   const [comments, setComments] = useState([]);
+
+  const [newComment, setNewComment] = useState("");
+
+  const notyf = new Notyf();
+
+  const { user } = useContext(UserContext);
 
   useEffect(() => {
     axios
@@ -27,9 +32,9 @@ const SingleMoviePage = () => {
         setGenre(response.data.genre);
       })
       .catch((error) => console.error(error));
-  }, [movieId, user]);
+  }, [movieId]);
 
-  useEffect(() => {
+  const fetchComments = () => {
     let token = localStorage.getItem("token");
 
     axios
@@ -46,7 +51,43 @@ const SingleMoviePage = () => {
         setComments(response.data.comments);
       })
       .catch((error) => console.error(error));
-  }, [movieId, user]);
+  };
+
+  useEffect(() => {
+    fetchComments();
+  }, [movieId]);
+
+  const addComment = (e) => {
+    e.preventDefault();
+    let token = localStorage.getItem("token");
+
+    if (user.id === null) {
+      notyf.error("Please login to comment");
+    }
+
+    axios
+      .patch(
+        `https://movieapp-api-lms1.onrender.com/movies/addComment/${movieId}`,
+        {
+          comment: newComment,
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+      .then((response) => {
+        console.log(response.data);
+        fetchComments();
+      })
+      .catch((error) => {
+        console.error(error);
+      });
+  };
+
+  console.log(user);
 
   return (
     <>
@@ -70,6 +111,27 @@ const SingleMoviePage = () => {
 
           <p className="text-gray-100 text-2xl">Comments</p>
           <hr></hr>
+
+          <form onSubmit={addComment}>
+            <textarea
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="Leave A Comment"
+              style={{
+                width: "100%",
+                height: "150px",
+                padding: "10px",
+                fontSize: "16px",
+                borderRadius: "8px",
+                border: "1px solid #ccc",
+              }}
+            ></textarea>
+            <button
+              type="submit"
+              className="p-3 my-2 bg-slate-100  rounded hover:bg-slate-200"
+            >
+              Submit
+            </button>
+          </form>
 
           {comments && comments.length > 0 ? (
             <ul className="text-gray-100">
