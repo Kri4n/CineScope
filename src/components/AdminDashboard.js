@@ -124,6 +124,28 @@ const AdminDashboard = () => {
       });
   };
 
+  // Delete movie
+  const deleteMovie = (deleteMovieId) => {
+    let token = localStorage.getItem("token");
+    axios
+      .delete(
+        `https://movieapp-api-lms1.onrender.com/movies/deleteMovie/${deleteMovieId}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      )
+      .then((response) => {
+        notyf.success("Movie deleted");
+        fetchMovies();
+      })
+      .catch((error) => {
+        notyf.error("Failed to delete movie");
+      });
+  };
+
   return (
     <div className="text-gray-100 p-3">
       <div className="flex flex-col justify-center items-center">
@@ -306,7 +328,10 @@ const AdminDashboard = () => {
                       >
                         Edit
                       </button>
-                      <button className="w-20 h-9 text-sm font-medium bg-red-500 text-white rounded hover:bg-red-600">
+                      <button
+                        onClick={() => deleteMovie(movie._id)}
+                        className="w-20 h-9 text-sm font-medium bg-red-500 text-white rounded hover:bg-red-600"
+                      >
                         Delete
                       </button>
                     </div>
